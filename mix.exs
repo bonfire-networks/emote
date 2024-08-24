@@ -17,7 +17,7 @@ defmodule Emote.Mixfile do
   defp dependencies do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
-      {:phoenix_html, "~> 4.1", optional: true}
+      {:phoenix_html, "~> 3.3 or ~> 4.0", optional: true}
     ]
   end
 
