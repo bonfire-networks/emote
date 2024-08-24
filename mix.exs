@@ -4,8 +4,8 @@ defmodule Emote.Mixfile do
   def project do
     [
       app: :emote,
-      version: "0.1.0",
-      elixir: "~> 1.3",
+      version: "0.1.1",
+      elixir: "~> 1.10",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: dependencies(),
@@ -15,18 +15,21 @@ defmodule Emote.Mixfile do
   end
 
   defp dependencies do
-    [{:ex_doc, ">= 0.0.0", only: :dev}]
+    [
+      {:ex_doc, ">= 0.0.0", only: :dev},
+      {:phoenix_html, "~> 4.1", optional: true}
+    ]
   end
 
   defp description do
     """
-      Small lib for converting emoticons and emoji mappers to emoji characters
+      Small lib for converting emoticons and emoji names to emoji characters or images, incl. custom emoji
     """
   end
 
   defp package do
     [
-      name: :smile,
+      name: :emote,
       files: ["lib", "mix.exs", "README*"],
       maintainers: ["Bonfire"],
       licenses: ["WTFPL"],
