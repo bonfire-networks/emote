@@ -12,7 +12,7 @@ defmodule Emote do
         emojis,
         emoticons
       ] do
-    for line <- File.stream!(file_path, [], :line) do
+    for line <- File.stream!(file_path, :line) do
       [emoji, name] =
         line
         |> String.split(" ", parts: 2)
