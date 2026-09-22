@@ -22,7 +22,7 @@ defmodule Emote do
     end
   end
   |> List.flatten()
-  # |> IO.inspect()
+  # 
   # define substitution functions for each
   # for {name, emoji} <- all do
   |> Enum.map(fn {name, emoji} ->
