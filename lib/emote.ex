@@ -144,29 +144,59 @@ defmodule Emote do
        when is_list(custom_emoji) or is_map(custom_emoji) do
     Enum.reduce(custom_emoji, text, fn
       {emoji, file}, text ->
-        String.replace(text, ":#{emoji}:", prepare_emoji_code(emoji, text_only(file)))
+        case prepare_emoji_code(emoji, file) do
+          nil -> text
+          code -> String.replace(text, ":#{emoji}:", code)
+        end
     end)
   end
 
   defp maybe_custom_emoji(text, _custom_emoji), do: text
 
-  defp prepare_emoji_code(emoji, file) do
+  # Every value placed in an attribute is escaped, and only plain http(s) addresses are accepted as `src`: anything else leaves the text as it is.
+  defp prepare_emoji_code(emoji, file) when is_binary(file) do
     # TODO: support SVG ones?
-    "<img class='emoji #{emoji}' alt='#{emoji}' title=':#{emoji}:' src='#{file}' />"
-  end
+    if http_url?(file) do
+      emoji = escape_attr(to_string(emoji))
 
-  defp text_only(content) when is_binary(content) do
-    cond do
-      Code.ensure_loaded?(HtmlSanitizeEx) ->
-        HtmlSanitizeEx.strip_tags(content)
-
-      Code.ensure_loaded?(Phoenix.HTML) ->
-        content
-        |> Phoenix.HTML.html_escape()
-        |> Phoenix.HTML.safe_to_string()
-
-      true ->
-        content
+      "<img class='emoji #{emoji}' alt='#{emoji}' title=':#{emoji}:' src='#{escape_attr(file)}' />"
     end
   end
+
+  defp prepare_emoji_code(_emoji, _file), do: nil
+
+  defp http_url?(url) do
+    case URI.parse(url) do
+      %URI{scheme: scheme, host: host} when scheme in ["http", "https"] and is_binary(host) and host != "" ->
+        not String.match?(url, ~r/[\s\x00-\x1f<>"'`\\]/)
+
+      _ ->
+        false
+    end
+  end
+
+  defp escape_attr(string) do
+    string
+    |> String.replace("&", "&amp;")
+    |> String.replace("<", "&lt;")
+    |> String.replace(">", "&gt;")
+    |> String.replace("\"", "&quot;")
+    |> String.replace("'", "&#39;")
+  end
+
+  # replaced by `escape_attr/1` and `http_url?/1`
+  # defp text_only(content) when is_binary(content) do
+  #   cond do
+  #     Code.ensure_loaded?(HtmlSanitizeEx) ->
+  #       HtmlSanitizeEx.strip_tags(content)
+  #
+  #     Code.ensure_loaded?(Phoenix.HTML) ->
+  #       content
+  #       |> Phoenix.HTML.html_escape()
+  #       |> Phoenix.HTML.safe_to_string()
+  #
+  #     true ->
+  #       content
+  #   end
+  # end
 end
